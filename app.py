@@ -70,21 +70,47 @@ def get_intervals():
     db_connection = get_db_connection()
     cursor = db_connection.cursor()
     cursor.execute("""
-        SELECT producers, MAX(year) - MIN(year) AS interval, MIN(year) as first_year, MAX(year) as last_year 
-        FROM movies 
-        WHERE winner = 1 
-        GROUP BY producers 
-        HAVING COUNT(*) > 1
+        SELECT year, producers
+        FROM movies
+        WHERE winner = 1
     """)
     rows = cursor.fetchall()
+    
     if not rows:
         return jsonify({"error": "No intervals found for producers."}), 404
-    intervals = [
-        {"producer": row[0], "interval": row[1], "first_year": row[2], "last_year": row[3]} 
-        for row in rows
-    ]
+
+    # Processar os dados para separar os produtores
+    producer_intervals = {}
+    for row in rows:
+        year = row[0]
+        producers = row[1].split(", ")
+        for producer in producers:
+            if producer not in producer_intervals:
+                producer_intervals[producer] = []
+            producer_intervals[producer].append(year)
+    
+    # Calcular os intervalos para cada produtor
+    intervals = []
+    for producer, years in producer_intervals.items():
+        if len(years) > 1:
+            years.sort()
+            first_year = years[0]
+            last_year = years[-1]
+            interval = last_year - first_year
+            intervals.append({
+                "producer": producer,
+                "first_year": first_year,
+                "last_year": last_year,
+                "interval": interval
+            })
+    
+    # Identificar o intervalo máximo e mínimo
+    if not intervals:
+        return jsonify({"error": "No producers with multiple wins found."}), 404
+    
     max_interval = max(intervals, key=lambda x: x["interval"])
     min_interval = min(intervals, key=lambda x: x["interval"])
+
     return jsonify({"maximum": max_interval, "minimum": min_interval})
 
 # Tratamento de erro para rotas não encontradas
