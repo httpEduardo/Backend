@@ -42,14 +42,15 @@ The Golden Raspberry Awards API is a RESTful service that processes and displays
 - **Dependencies**:
   - Flask 2.3.3
   - pandas 1.5.3
+  - pytest (for testing)
 
 ## 🚀 Installation
 
 ### 1. Clone the Repository
 
 ```bash
-git clone <REPOSITORY_URL>
-cd <PROJECT_FOLDER>
+git clone https://github.com/httpEduardo/Backend.git
+cd Backend
 ```
 
 ### 2. Create a Virtual Environment
@@ -285,7 +286,7 @@ curl -X GET http://127.0.0.1:5000/api/invalid-route
 **Response:**
 ```json
 {
-  "error": "Rota não encontrada"
+  "error": "Route not found"
 }
 ```
 
